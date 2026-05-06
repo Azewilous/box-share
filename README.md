@@ -2,6 +2,8 @@
 
 A file-sharing backend built with Spring Boot and AWS. Users can upload files directly to S3 via pre-signed URLs, with upload status tracked asynchronously through SQS.
 
+> This is a learning project to experiment with high data accessibility across systems.
+
 ## Tech Stack
 
 - **Java 21 / Spring Boot 3.5**
