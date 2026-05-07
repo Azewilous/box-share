@@ -6,10 +6,11 @@ A file-sharing backend built with Spring Boot and AWS. Users can upload files di
 
 ## Tech Stack
 
-- **Java 21 / Spring Boot 3.5**
+- **Java 21 / Spring Boot 4.0.6**
 - **PostgreSQL** — user and file metadata
 - **AWS S3** — file storage via pre-signed URLs
 - **AWS SQS** — S3 event notifications for upload status updates
+- **Flyway** — database schema migrations
 
 ## Prerequisites
 
@@ -110,6 +111,40 @@ The server starts on `http://localhost:8080`.
 2. Client uploads the file directly to S3 using that URL
 3. S3 notifies SQS — the app consumes the message and marks the file as `COMPLETED`
 4. `GET /api/file/{filename}` — returns a pre-signed GET URL for downloading
+
+## Database Migrations (Flyway)
+
+Flyway runs automatically on startup and applies any pending migrations in order.
+
+Migration files live in `src/main/resources/db/migration/` and must follow the naming convention:
+
+```
+V{version}__{description}.sql
+```
+
+Examples:
+```
+V1__init.sql
+V2__add_file_table.sql
+V3__add_user_roles.sql
+```
+
+Rules:
+- Version numbers must be unique and increase — Flyway runs them in order
+- Two underscores between the version and description
+- Never edit a migration that has already been applied — add a new one instead
+- Flyway tracks applied migrations in the `flyway_schema_history` table
+
+**Generating the initial schema from your JPA entities:**
+
+Add these to `application-local.properties` temporarily, run the app once to generate the file, then remove them:
+
+```properties
+spring.jpa.properties.jakarta.persistence.schema-generation.scripts.action=create
+spring.jpa.properties.jakarta.persistence.schema-generation.scripts.create-target=src/main/resources/db/migration/V1__init.sql
+spring.jpa.properties.jakarta.persistence.schema-generation.database.action=none
+spring.jpa.hibernate.ddl-auto=none
+```
 
 ## Running Tests
 

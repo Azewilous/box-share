@@ -21,6 +21,7 @@ import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.sqs.model.Message;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -42,7 +43,8 @@ public class SQSConsumer {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.findAndRegisterModules();
             Records recordList = objectMapper.readValue(body, Records.class);
-            for (MessageResponse record : recordList.getRecords()) {
+            List<MessageResponse> responses = recordList.getRecords();
+            for (MessageResponse record : responses) {
 
                 MessageS3Response messageS3Response = record.getResponse();
                 BucketObject bucketObject = messageS3Response.getObject();
@@ -73,7 +75,7 @@ public class SQSConsumer {
 @JsonIgnoreProperties(ignoreUnknown = true)
 class Records {
     @JsonProperty("Records")
-    private List<MessageResponse> records;
+    private List<MessageResponse> records = new ArrayList<>();
 }
 
 @Getter

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- registers %clr, %wEx and other Spring Boot converters -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- ===== CONSOLE (pretty + colored for local dev) ===== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%15.15t]){magenta} %clr(%-40.40logger{39}){cyan}%clr(:){faint} %m%n%wEx</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ===== FILE (structured JSON for Logstash ingestion) ===== -->
+    <appender name="LOGSTASH_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/app.json</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/app.%d{yyyy-MM-dd}.json.gz</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+        </encoder>
+    </appender>
+
+    <!-- ===== LOCAL profile: colored console only ===== -->
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="org.azelabs.boxshare" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+        <!-- quiet down noisy Spring internals -->
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>
+    </springProfile>
+
+    <!-- ===== All other profiles: JSON file (+ console for visibility) ===== -->
+    <springProfile name="!local">
+        <root level="INFO">
+            <appender-ref ref="LOGSTASH_FILE"/>
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="org.azelabs.boxshare" level="INFO" additivity="false">
+            <appender-ref ref="LOGSTASH_FILE"/>
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+    </springProfile>
+
+</configuration>
