@@ -1,0 +1,12 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  background: radial-gradient(ellipse at center, #162540 0%, #0a1220 70%);
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}

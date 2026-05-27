@@ -1,0 +1,38 @@
+.bar {
+  flex-shrink: 0;
+  background: var(--panel-dark);
+  border-top: 2px solid var(--panel-border);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.a .dot { background: var(--btn-a); }
+.b .dot { background: var(--btn-b); }
+.x .dot { background: var(--btn-x); }
+.y .dot { background: var(--btn-y); }

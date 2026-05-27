@@ -1,0 +1,44 @@
+:root {
+  --bg: #0a1220;
+  --panel-dark: #0f1c30;
+  --panel-mid: #162540;
+  --panel-border: #3a6a9a;
+  --panel-border-bright: #5a9acd;
+  --label-bg: #2a5a8a;
+  --label-text: #c8e8ff;
+  --box-teal-dark: #0a5a5a;
+  --box-teal-mid: #0e7a7a;
+  --box-teal-light: #14a0a0;
+  --slot-highlight: #e07820;
+  --slot-highlight-glow: rgba(224, 120, 32, 0.6);
+  --text-white: #ffffff;
+  --text-dim: #7aaac8;
+  --text-label: #c8e8ff;
+  --btn-a: #3a9a3a;
+  --btn-b: #cc2222;
+  --btn-x: #2255cc;
+  --btn-y: #cc9900;
+  --shadow-panel: 0 4px 24px rgba(0,0,0,0.7);
+
+  font: 14px/1.4 'Segoe UI', system-ui, sans-serif;
+  color: var(--text-white);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+#root {
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+}

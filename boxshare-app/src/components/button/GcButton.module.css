@@ -1,0 +1,44 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+  font-family: inherit;
+  color: #fff;
+}
+
+.btn:hover  { filter: brightness(1.2); }
+.btn:active { transform: scale(0.95); }
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.a { background: #2a7a2a; }
+.a .dot { background: #6edc6e; }
+
+.b { background: #8a1a1a; }
+.b .dot { background: #f06060; }
+
+.x { background: #1a3a8a; }
+.x .dot { background: #6090f0; }
+
+.y { background: #7a6a00; }
+.y .dot { background: #f0d060; }
+
+.lg {
+  padding: 10px 24px;
+  font-size: 14px;
+  border-radius: 24px;
+}
