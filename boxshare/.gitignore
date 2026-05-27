@@ -27,6 +27,14 @@ out/
 !**/src/test/**/out/
 /src/main/resources/secrets.properties
 
+### Logs ###
+logs/
+*.log
+*.json.log
+
+### Claude Code ###
+.claude/
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
