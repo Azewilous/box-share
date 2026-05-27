@@ -2,10 +2,12 @@ package org.azelabs.boxshare.application.filters;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.azelabs.boxshare.controllers.AuthController;
 import org.azelabs.boxshare.services.HybridUserDetailsService;
 import org.azelabs.boxshare.services.JwtService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,14 +37,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse res,
             @NonNull FilterChain chain
     ) throws ServletException, IOException {
-        final String authHeader = req.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        final String jwt = resolveToken(req);
+        if (jwt == null) {
             chain.doFilter(req, res);
             return;
         }
 
         try {
-            final String jwt = authHeader.substring(7);
             final String identity = jwtService.extractIdentity(jwt);
 
             if (identity != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -56,5 +58,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.warn("JWT processing failed: {}", e.getMessage());
         }
         chain.doFilter(req, res);
+    }
+
+    private String resolveToken(HttpServletRequest req) {
+        String header = req.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        if (req.getCookies() != null) {
+            return Arrays.stream(req.getCookies())
+                    .filter(c -> AuthController.COOKIE_NAME.equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
     }
 }

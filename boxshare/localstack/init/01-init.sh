@@ -5,6 +5,17 @@ echo "--- LocalStack init: creating S3 bucket and SQS queue ---"
 
 awslocal s3 mb s3://box-share-file-store
 
+awslocal s3api put-bucket-cors \
+  --bucket box-share-file-store \
+  --cors-configuration '{
+    "CORSRules": [{
+      "AllowedOrigins": ["http://localhost:5173"],
+      "AllowedMethods": ["GET", "PUT", "HEAD"],
+      "AllowedHeaders": ["*"],
+      "ExposeHeaders": ["ETag"]
+    }]
+  }'
+
 awslocal sqs create-queue --queue-name box-share-app-queue
 
 QUEUE_ARN=$(awslocal sqs get-queue-attributes \

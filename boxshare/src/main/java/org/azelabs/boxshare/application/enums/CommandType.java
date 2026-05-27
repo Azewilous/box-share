@@ -8,9 +8,11 @@ public enum CommandType {
     DELETE_USER("DeleteUserCommand"),
     UPDATE_USER("UpdateUserCommand"),
     GET_USER("GetUserCommand"),
+    VERIFY_USER_EMAIL("VerifyUserEmailCommand"),
     CREATE_FILE("CreateFileCommand"),
     GET_FILE("GetFileCommand"),
-    DELETE_FILE("DeleteFileCommand");
+    DELETE_FILE("DeleteFileCommand"),
+    LIST_MY_FILES("ListMyFilesCommand");
 
     private final String name;
 

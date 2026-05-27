@@ -3,10 +3,14 @@ package org.azelabs.boxshare.controllers;
 import org.azelabs.boxshare.application.CommandInvoker;
 import org.azelabs.boxshare.application.enums.CommandType;
 import org.azelabs.boxshare.dtos.UserRecord;
+import org.azelabs.boxshare.models.HybridUser;
+import org.azelabs.boxshare.services.interfaces.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
 import java.util.Optional;
 
 @RestController
@@ -14,10 +18,12 @@ import java.util.Optional;
 public class UserController {
 
     private final CommandInvoker invoker;
+    private final IUserService userService;
 
     @Autowired
-    public UserController(CommandInvoker invoker) {
+    public UserController(CommandInvoker invoker, IUserService userService) {
         this.invoker = invoker;
+        this.userService = userService;
     }
 
     @PostMapping
@@ -42,5 +48,17 @@ public class UserController {
     public ResponseEntity<Boolean> deleteUser(@PathVariable Long id) {
         Boolean deleted = this.invoker.execute(CommandType.DELETE_USER.getName(), id);
         return ResponseEntity.ok(deleted);
+    }
+
+    @PostMapping("/verify/{token}")
+    public ResponseEntity<UserRecord> verifyUserEmail(@PathVariable UUID token) {
+        UserRecord verifiedUser = this.invoker.execute(CommandType.VERIFY_USER_EMAIL.getName(), token);
+        return ResponseEntity.ok(verifiedUser);
+    }
+
+    @PostMapping("/verify/resend")
+    public ResponseEntity<Void> resendVerificationEmail(@AuthenticationPrincipal HybridUser principal) {
+        userService.resendVerificationEmail(principal.getUser().getEmail());
+        return ResponseEntity.ok().build();
     }
 }

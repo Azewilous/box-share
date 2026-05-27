@@ -1,5 +1,5 @@
 .panel {
-  width: 200px;
+  width: 220px;
   flex-shrink: 0;
   background: var(--panel-dark);
   border-right: 2px solid var(--panel-border);
@@ -10,8 +10,8 @@
 .label {
   background: var(--label-bg);
   border-bottom: 2px solid var(--panel-border-bright);
-  padding: 6px 12px;
-  font-size: 11px;
+  padding: 7px 12px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -30,7 +30,7 @@
 }
 
 .icon {
-  font-size: 52px;
+  font-size: 56px;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
   animation: float 3s ease-in-out infinite;
 }
@@ -41,7 +41,7 @@
 }
 
 .name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-white);
   text-align: center;
@@ -49,7 +49,7 @@
 }
 
 .meta {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-dim);
   text-align: center;
   line-height: 1.8;
@@ -68,8 +68,84 @@
 
 .hint {
   padding: 12px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-dim);
   text-align: center;
   line-height: 1.6;
+}
+
+.badgePublic {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(96, 208, 96, 0.15);
+  color: #60d060;
+  border: 1px solid rgba(96, 208, 96, 0.4);
+}
+
+.badgePrivate {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(128, 168, 240, 0.15);
+  color: #80a8f0;
+  border: 1px solid rgba(128, 168, 240, 0.4);
+}
+
+/* ── Mobile: horizontal strip at bottom ─────────────────────────── */
+@media (max-width: 640px) {
+  .panel {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    border-right: none;
+    border-top: 2px solid var(--panel-border);
+    min-height: 64px;
+    flex-shrink: 0;
+  }
+
+  .label {
+    display: none;
+  }
+
+  .preview {
+    flex-direction: row;
+    flex: 1;
+    padding: 8px 16px;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .icon {
+    font-size: 32px;
+    animation: none;
+    flex-shrink: 0;
+  }
+
+  .name {
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .meta {
+    display: none;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .hint {
+    padding: 8px 16px;
+    font-size: 12px;
+    text-align: right;
+    border-left: 1px solid var(--panel-border);
+    flex-shrink: 0;
+    max-width: 140px;
+  }
 }

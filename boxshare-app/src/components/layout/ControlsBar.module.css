@@ -7,23 +7,48 @@
   align-items: center;
   justify-content: center;
   gap: 28px;
+  flex-wrap: wrap;
 }
 
 .ctrl {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 7px;
+  font-size: 13px;
   color: var(--text-dim);
   font-weight: 600;
   letter-spacing: 0.3px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.15s;
+}
+
+.ctrl:not(.inactive):hover {
+  color: var(--label-text);
+}
+
+.ctrl.inactive {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ctrl.pressed {
+  color: var(--label-text);
+  transform: scale(0.92);
+}
+
+.ctrl.pressed .dot {
+  filter: brightness(1.4);
 }
 
 .dot {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
   display: flex;
   align-items: center;
@@ -36,3 +61,17 @@
 .b .dot { background: var(--btn-b); }
 .x .dot { background: var(--btn-x); }
 .y .dot { background: var(--btn-y); }
+.z .dot { background: #1a7a7a; }
+
+.z:not(.inactive) .dot { background: #1aaeae; }
+
+@media (max-width: 480px) {
+  .bar {
+    gap: 16px;
+    padding: 6px 12px;
+  }
+
+  .ctrl {
+    font-size: 12px;
+  }
+}

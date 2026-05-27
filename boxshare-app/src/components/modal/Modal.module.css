@@ -6,6 +6,7 @@
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding: 16px;
   animation: fadeIn 0.15s ease;
 }
 
@@ -17,18 +18,23 @@
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
   animation: slideIn 0.2s ease;
   width: 100%;
+  max-height: 90svh;
+  overflow-y: auto;
 }
 
 .header {
   background: var(--label-bg);
   border-bottom: 2px solid var(--panel-border-bright);
-  padding: 8px 16px;
-  font-size: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--label-text);
   text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .body {
@@ -43,4 +49,26 @@
 @keyframes slideIn {
   from { transform: translateY(-16px); opacity: 0; }
   to   { transform: translateY(0);     opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .panel {
+    border-radius: 16px 16px 0 0;
+    max-height: 92svh;
+    animation: slideUp 0.25s ease;
+  }
+
+  .body {
+    padding: 16px;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }

@@ -47,6 +47,13 @@ public class FileService implements IFileService {
     }
 
     @Override
+    public List<FileRecord> allByOwner(String identity) {
+        return repository.findAllByUploadedBy(identity).stream()
+                .map(f -> toDTO(f, null))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<FileRecord> getById(Long id) {
         return repository.findById(id).map(f -> toDTO(f, null));
     }
@@ -145,6 +152,13 @@ public class FileService implements IFileService {
             log.info("Presigned URL to upload a file to: [{}]", myURL);
 
             return presignedRequest.url().toExternalForm();
+    }
+
+    @Override
+    public boolean isOwner(Long fileId, String identity) {
+        return repository.findById(fileId)
+                .map(f -> identity.equals(f.getUploadedBy()))
+                .orElse(false);
     }
 
     @Override

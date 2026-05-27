@@ -20,6 +20,7 @@
     radial-gradient(ellipse at 30% 40%, rgba(20,160,160,0.4) 0%, transparent 60%),
     radial-gradient(ellipse at 70% 70%, rgba(10,90,90,0.5)  0%, transparent 50%),
     linear-gradient(160deg, #0e8080 0%, #0a5858 40%, #0d7070 70%, #0a5050 100%);
+  width: 100%;
 }
 
 .grid {
@@ -35,23 +36,53 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
-  color: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.2);
   text-transform: uppercase;
   pointer-events: none;
 }
 
 .slot {
-  width: 52px;
-  height: 52px;
+  width: 100%;
+  min-height: 78px;
   border-radius: 8px;
   background: rgba(255,255,255,0.08);
   border: 2px solid rgba(255,255,255,0.12);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  padding: 6px 4px 5px;
+  gap: 3px;
   cursor: pointer;
   transition: all 0.15s;
+  overflow: hidden;
+}
+
+.emoji {
+  font-size: clamp(16px, 2.5vw, 22px);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.slotName {
+  font-size: 8.5px;
+  font-weight: 600;
+  color: var(--text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.slotType {
+  font-size: 7.5px;
+  color: var(--text-dim);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1;
 }
 
 .slot:hover {
@@ -71,11 +102,17 @@
 .slot.empty {
   background: rgba(0,0,0,0.15);
   border-color: rgba(255,255,255,0.06);
-  cursor: default;
 }
 
 .slot.empty:hover {
   transform: none;
   background: rgba(0,0,0,0.15);
-  border-color: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
 }

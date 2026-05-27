@@ -12,7 +12,7 @@
   --slot-highlight: #e07820;
   --slot-highlight-glow: rgba(224, 120, 32, 0.6);
   --text-white: #ffffff;
-  --text-dim: #7aaac8;
+  --text-dim: #9dc4e0;
   --text-label: #c8e8ff;
   --btn-a: #3a9a3a;
   --btn-b: #cc2222;
@@ -20,7 +20,7 @@
   --btn-y: #cc9900;
   --shadow-panel: 0 4px 24px rgba(0,0,0,0.7);
 
-  font: 14px/1.4 'Segoe UI', system-ui, sans-serif;
+  font: 15px/1.4 'Segoe UI', system-ui, sans-serif;
   color: var(--text-white);
   background: var(--bg);
   font-synthesis: none;

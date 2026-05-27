@@ -16,6 +16,8 @@ import java.util.UUID;
 public class HybridUser implements UserDetails {
     private final UserModel user;
 
+    public UserModel getUser() { return user; }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (user.getRole() == null || user.getRole().getType() == null) {

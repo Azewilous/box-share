@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface IFileService {
 
     List<FileRecord> all();
+    List<FileRecord> allByOwner(String identity);
     Optional<FileRecord> getById(Long id);
     Optional<FileRecord> getByName(String name);
     FileRecord save(FileRecord file);
@@ -19,5 +20,6 @@ public interface IFileService {
     FileRecord generatePreSignedUrl(String fileName, SdkHttpMethod httpMethod);
     FileRecord updateVisibility(Long id, FileVisibility visibility);
     Optional<FileRecord> getByShareToken(UUID shareToken);
+    boolean isOwner(Long fileId, String identity);
 
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Setter
@@ -25,4 +26,8 @@ public class UserModel extends BaseModel {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "role_id")
     private RoleModel role;
+    private ZonedDateTime emailVerifiedOn;
+    private UUID verificationToken;
+    private ZonedDateTime verificationTokenExpiresAt;
+    private ZonedDateTime lastVerificationSentAt;
 }

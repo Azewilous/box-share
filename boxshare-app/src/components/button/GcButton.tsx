@@ -8,14 +8,16 @@ interface Props {
   large?: boolean
   onClick?: () => void
   type?: 'button' | 'submit'
+  disabled?: boolean
 }
 
-export default function GcButton({ variant, label, large, onClick, type = 'button' }: Props) {
+export default function GcButton({ variant, label, large, onClick, type = 'button', disabled }: Props) {
   return (
     <button
       type={type}
       className={[s.btn, s[variant], large ? s.lg : ''].join(' ')}
       onClick={onClick}
+      disabled={disabled}
     >
       <span className={s.dot} />
       {label}

@@ -3,12 +3,15 @@ package org.azelabs.boxshare.controllers;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.azelabs.boxshare.application.CommandInvoker;
+import java.util.List;
 import org.azelabs.boxshare.application.enums.CommandType;
 import org.azelabs.boxshare.dtos.FileRecord;
 import org.azelabs.boxshare.dtos.VisibilityRequest;
+import org.azelabs.boxshare.models.HybridUser;
 import org.azelabs.boxshare.services.interfaces.IFileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +23,13 @@ public class FileController {
     private final CommandInvoker invoker;
     private final IFileService fileService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<List<FileRecord>> listMyFiles(@AuthenticationPrincipal HybridUser principal) {
+        List<FileRecord> files = invoker.execute(CommandType.LIST_MY_FILES.getName(), principal.getUsername());
+        return ResponseEntity.ok(files);
+    }
+
     @GetMapping("/{filename}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<FileRecord> generateGetUrl(@PathVariable String filename) {
@@ -29,13 +39,15 @@ public class FileController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<FileRecord> generatePostUrl(@RequestBody FileRecord body) {
-        FileRecord response = this.invoker.execute(CommandType.CREATE_FILE.getName(), body);
+    public ResponseEntity<FileRecord> generatePostUrl(@RequestBody FileRecord body, @AuthenticationPrincipal HybridUser principal) {
+        FileRecord withOwner = new FileRecord(body.id(), body.name(), body.size(), body.mimeType(),
+                principal.getUser().getIdentity().toString(), body.status(), body.visibility(), body.shareToken(), body.presignedUrl());
+        FileRecord response = this.invoker.execute(CommandType.CREATE_FILE.getName(), withOwner);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @fileService.isOwner(#id, authentication.name)")
     public ResponseEntity<Void> deleteFile(@PathVariable Long id) {
         Boolean deleted = this.invoker.execute(CommandType.DELETE_FILE.getName(), id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();

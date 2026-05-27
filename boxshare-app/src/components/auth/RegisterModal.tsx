@@ -2,13 +2,19 @@ import { useState } from 'react'
 import Modal from '../modal/Modal'
 import GcButton from '../button/GcButton'
 import s from './Auth.module.css'
+import { useAuth } from '../../context/AuthContext'
+import { resolveApiError } from '../../api/errors'
+import PasswordStrength from './PasswordStrength'
 
 interface Props {
   onClose: () => void
   onSwitchToLogin: () => void
+  onSuccess: () => void
 }
 
 interface Fields {
+  firstName: string
+  lastName: string
   username: string
   email: string
   password: string
@@ -16,6 +22,8 @@ interface Fields {
 }
 
 interface Errors {
+  firstName?: string
+  lastName?: string
   username?: string
   email?: string
   password?: string
@@ -24,6 +32,10 @@ interface Errors {
 
 function validate(fields: Fields): Errors {
   const errors: Errors = {}
+  if (!fields.firstName || fields.firstName.length < 1)
+    errors.firstName = 'First name is required'
+  if (!fields.lastName || fields.lastName.length < 1)
+    errors.lastName = 'Last name is required'
   if (!fields.username || fields.username.length < 3)
     errors.username = 'Username must be at least 3 characters'
   if (!fields.email || !/\S+@\S+\.\S+/.test(fields.email))
@@ -35,28 +47,77 @@ function validate(fields: Fields): Errors {
   return errors
 }
 
-export default function RegisterModal({ onClose, onSwitchToLogin }: Props) {
+export default function RegisterModal({ onClose, onSwitchToLogin, onSuccess }: Props) {
+  const { register } = useAuth()
   const [fields, setFields] = useState<Fields>({
-    username: '', email: '', password: '', confirmPassword: '',
+    firstName: '', lastName: '', username: '', email: '', password: '', confirmPassword: '',
   })
   const [errors, setErrors] = useState<Errors>({})
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setFields(prev => ({ ...prev, [e.target.name]: e.target.value }))
     setErrors(prev => ({ ...prev, [e.target.name]: undefined }))
+    setApiError(null)
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const errs = validate(fields)
     if (Object.keys(errs).length) { setErrors(errs); return }
-    // TODO: call POST /api/auth/register
-    console.log('register', fields)
+
+    setLoading(true)
+    setApiError(null)
+    try {
+      await register({
+        firstName: fields.firstName,
+        lastName: fields.lastName,
+        username: fields.username,
+        email: fields.email,
+        password: fields.password,
+      })
+      onSuccess()
+    } catch (err) {
+      setApiError(resolveApiError(err))
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <Modal title="— NEW TRAINER —" onClose={onClose} maxWidth={420}>
       <form className={s.form} onSubmit={handleSubmit} noValidate>
+        <div className={s.row}>
+          <div className={s.field}>
+            <label className={s.label}>First Name</label>
+            <input
+              className={`${s.input} ${errors.firstName ? s.error : ''}`}
+              type="text"
+              name="firstName"
+              placeholder="Ash"
+              value={fields.firstName}
+              onChange={handleChange}
+              autoComplete="given-name"
+            />
+            {errors.firstName && <span className={s.errorMsg}>{errors.firstName}</span>}
+          </div>
+
+          <div className={s.field}>
+            <label className={s.label}>Last Name</label>
+            <input
+              className={`${s.input} ${errors.lastName ? s.error : ''}`}
+              type="text"
+              name="lastName"
+              placeholder="Ketchum"
+              value={fields.lastName}
+              onChange={handleChange}
+              autoComplete="family-name"
+            />
+            {errors.lastName && <span className={s.errorMsg}>{errors.lastName}</span>}
+          </div>
+        </div>
+
         <div className={s.field}>
           <label className={s.label}>Username</label>
           <input
@@ -99,6 +160,8 @@ export default function RegisterModal({ onClose, onSwitchToLogin }: Props) {
           {errors.password && <span className={s.errorMsg}>{errors.password}</span>}
         </div>
 
+        <PasswordStrength password={fields.password} />
+
         <div className={s.field}>
           <label className={s.label}>Confirm Password</label>
           <input
@@ -113,9 +176,11 @@ export default function RegisterModal({ onClose, onSwitchToLogin }: Props) {
           {errors.confirmPassword && <span className={s.errorMsg}>{errors.confirmPassword}</span>}
         </div>
 
+        {apiError && <p className={s.apiError}>{apiError}</p>}
+
         <div className={s.actions}>
-          <GcButton variant="b" label="Cancel"   onClick={onClose} />
-          <GcButton variant="a" label="Register" type="submit" />
+          <GcButton variant="b" label="Cancel"   onClick={onClose} disabled={loading} />
+          <GcButton variant="a" label={loading ? 'Registering…' : 'Register'} type="submit" disabled={loading} />
         </div>
 
         <p className={s.footer}>

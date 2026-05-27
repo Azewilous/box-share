@@ -6,6 +6,7 @@
   justify-content: center;
   padding: 20px;
   gap: 16px;
+  min-width: 0;
 }
 
 .nav {
@@ -19,9 +20,9 @@
   border: 2px solid var(--panel-border-bright);
   color: var(--label-text);
   border-radius: 6px;
-  width: 32px;
-  height: 32px;
-  font-size: 14px;
+  width: 36px;
+  height: 36px;
+  font-size: 15px;
   font-weight: 900;
   display: flex;
   align-items: center;
@@ -35,7 +36,7 @@
   border: 2px solid var(--panel-border-bright);
   border-radius: 8px;
   padding: 6px 32px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: 1px;
   color: var(--text-white);
@@ -46,11 +47,77 @@
 .stat {
   display: flex;
   gap: 24px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-dim);
   font-weight: 600;
 }
 
 .stat span {
   color: var(--label-text);
+}
+
+.gridWrap {
+  position: relative;
+  width: 100%;
+}
+
+.emptyOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(10, 18, 32, 0.6);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.emptyIcon {
+  font-size: 40px;
+}
+
+.emptyText {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin: 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.emptyBtn {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--panel-border-bright);
+  background: none;
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 5px 16px;
+  cursor: pointer;
+  font-family: inherit;
+  pointer-events: all;
+  letter-spacing: 0.5px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.emptyBtn:hover {
+  border-color: var(--panel-border-bright);
+  color: var(--label-text);
+}
+
+@media (max-width: 640px) {
+  .area {
+    padding: 14px;
+    gap: 12px;
+    justify-content: flex-start;
+    padding-top: 16px;
+  }
+
+  .navLabel {
+    font-size: 15px;
+    min-width: 120px;
+    padding: 5px 20px;
+  }
 }
