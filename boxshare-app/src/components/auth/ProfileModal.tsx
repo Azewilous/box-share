@@ -4,7 +4,7 @@ import GcButton from '../button/GcButton'
 import s from './Auth.module.css'
 import { fetchProfile, updateProfile, type UserProfile } from '../../api/users'
 import { resolveApiError } from '../../api/errors'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '../../context/useAuth'
 
 interface Props {
   onClose: () => void

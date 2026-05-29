@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.DefaultResponseErrorHandler;
@@ -42,6 +43,7 @@ class UserFileE2ETest {
     @MockitoBean S3Client s3Client;
     @MockitoBean SqsClient sqsClient;
     @MockitoBean SqsAsyncClient sqsAsyncClient;
+    @MockitoBean JavaMailSender javaMailSender;
 
     private RestTemplate restTemplate;
 
@@ -115,7 +117,7 @@ class UserFileE2ETest {
         assertThat(user.lastName()).isEqualTo("Doe");
 
         // 2. Create first file for the user
-        FileRecord file1Request = new FileRecord(null, "document-" + runId + ".pdf", null, null, user.email(), null, null, null, null);
+        FileRecord file1Request = new FileRecord(null, "document-" + runId + ".pdf", null, null, null, null, null, null, null, false);
         ResponseEntity<FileRecord> file1Response = restTemplate.exchange(
                 url("/api/file"), HttpMethod.POST, withAuth(token, file1Request), FileRecord.class);
 
@@ -124,7 +126,7 @@ class UserFileE2ETest {
         assertThat(file1).isNotNull();
         assertThat(file1.id()).isNotNull();
         assertThat(file1.name()).isEqualTo("document-" + runId + ".pdf");
-        assertThat(file1.uploadedBy()).isEqualTo(user.email());
+        assertThat(file1.owner().getEmail()).isEqualTo(user.email());
         assertThat(file1.status()).isEqualTo(UploadStatus.NOT_STARTED);
         assertThat(file1.presignedUrl()).isNotBlank();
 
@@ -140,7 +142,7 @@ class UserFileE2ETest {
         assertThat(updatedUser.lastName()).isEqualTo("Smith");
 
         // 4. Create a second file for the updated user
-        FileRecord file2Request = new FileRecord(null, "image-" + runId + ".png", null, null, updatedUser.email(), null, null, null, null);
+        FileRecord file2Request = new FileRecord(null, "image-" + runId + ".png", null, null, null, null, null, null, null, false);
         ResponseEntity<FileRecord> file2Response = restTemplate.exchange(
                 url("/api/file"), HttpMethod.POST, withAuth(token, file2Request), FileRecord.class);
 

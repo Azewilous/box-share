@@ -1,5 +1,6 @@
 package org.azelabs.boxshare.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ public class UserModel extends BaseModel {
     private String email;
     @Column(unique = true, nullable = false)
     private String username;
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
     @Column(unique = true, nullable = false)
@@ -27,7 +29,10 @@ public class UserModel extends BaseModel {
     @JoinColumn(name = "role_id")
     private RoleModel role;
     private ZonedDateTime emailVerifiedOn;
+    @JsonIgnore
     private UUID verificationToken;
+    @JsonIgnore
     private ZonedDateTime verificationTokenExpiresAt;
+    @JsonIgnore
     private ZonedDateTime lastVerificationSentAt;
 }

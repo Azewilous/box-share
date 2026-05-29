@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -48,6 +49,7 @@ class RolesAndVisibilityIntegrationTest {
     @MockitoBean S3Client s3Client;
     @MockitoBean SqsClient sqsClient;
     @MockitoBean SqsAsyncClient sqsAsyncClient;
+    @MockitoBean JavaMailSender javaMailSender;
 
     private RestTemplate restTemplate;   // standard — works for GET, POST, DELETE
     private RestTemplate patchTemplate;  // Apache — required for PATCH
@@ -109,7 +111,7 @@ class RolesAndVisibilityIntegrationTest {
     }
 
     private FileRecord createFile(String token, String filename) {
-        FileRecord body = new FileRecord(null, filename, null, null, "user@example.com", null, null, null, null);
+        FileRecord body = new FileRecord(null, filename, null, null, null, null, null, null, null, false);
         return restTemplate.exchange(url("/api/file"), HttpMethod.POST, withAuth(token, body), FileRecord.class).getBody();
     }
 
@@ -122,21 +124,21 @@ class RolesAndVisibilityIntegrationTest {
 
         ResponseEntity<FileRecord> response = restTemplate.exchange(
                 url("/api/file"), HttpMethod.POST,
-                withAuth(token, new FileRecord(null, filename, null, null, null, null, null, null, null)),
+                withAuth(token, new FileRecord(null, filename, null, null, null, null, null, null, null, false)),
                 FileRecord.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
-    void deleteFile_asUser_returns403() {
-        String token = registerAndGetToken();
-        FileRecord file = createFile(token, "delete-as-user-" + UUID.randomUUID() + ".txt");
+    void deleteFile_asNonOwner_returns403() {
+        String ownerToken = registerAndGetToken();
+        String otherToken = registerAndGetToken();
+        FileRecord file = createFile(ownerToken, "delete-as-non-owner-" + UUID.randomUUID() + ".txt");
 
         ResponseEntity<Void> response = restTemplate.exchange(
-                url("/api/file/" + file.id()), HttpMethod.DELETE, withAuth(token), Void.class);
+                url("/api/file/" + file.id()), HttpMethod.DELETE, withAuth(otherToken), Void.class);
 
-        // DELETE is ADMIN-only; USER gets 403
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -160,7 +162,7 @@ class RolesAndVisibilityIntegrationTest {
 
         ResponseEntity<FileRecord> response = patchTemplate.exchange(
                 url("/api/file/" + file.id() + "/visibility"), HttpMethod.PATCH,
-                withAuth(token, new VisibilityRequest(FileVisibility.PUBLIC)), FileRecord.class);
+                withAuth(token, new VisibilityRequest(null, FileVisibility.PUBLIC)), FileRecord.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().visibility()).isEqualTo(FileVisibility.PUBLIC);
@@ -175,13 +177,13 @@ class RolesAndVisibilityIntegrationTest {
         // make public first
         FileRecord publicFile = patchTemplate.exchange(
                 url("/api/file/" + file.id() + "/visibility"), HttpMethod.PATCH,
-                withAuth(token, new VisibilityRequest(FileVisibility.PUBLIC)), FileRecord.class).getBody();
+                withAuth(token, new VisibilityRequest(null, FileVisibility.PUBLIC)), FileRecord.class).getBody();
         assertThat(publicFile.shareToken()).isNotNull();
 
         // revert to private
         ResponseEntity<FileRecord> response = patchTemplate.exchange(
                 url("/api/file/" + file.id() + "/visibility"), HttpMethod.PATCH,
-                withAuth(token, new VisibilityRequest(FileVisibility.PRIVATE)), FileRecord.class);
+                withAuth(token, new VisibilityRequest(null, FileVisibility.PRIVATE)), FileRecord.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().visibility()).isEqualTo(FileVisibility.PRIVATE);
@@ -192,7 +194,7 @@ class RolesAndVisibilityIntegrationTest {
     void updateVisibility_withoutToken_returns401() {
         ResponseEntity<String> response = patchTemplate.exchange(
                 url("/api/file/1/visibility"), HttpMethod.PATCH,
-                new HttpEntity<>(new VisibilityRequest(FileVisibility.PUBLIC)), String.class);
+                new HttpEntity<>(new VisibilityRequest(null, FileVisibility.PUBLIC)), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
@@ -206,7 +208,7 @@ class RolesAndVisibilityIntegrationTest {
 
         FileRecord publicFile = patchTemplate.exchange(
                 url("/api/file/" + file.id() + "/visibility"), HttpMethod.PATCH,
-                withAuth(token, new VisibilityRequest(FileVisibility.PUBLIC)), FileRecord.class).getBody();
+                withAuth(token, new VisibilityRequest(null, FileVisibility.PUBLIC)), FileRecord.class).getBody();
 
         // access via share link — no auth header
         ResponseEntity<FileRecord> response = restTemplate.getForEntity(
@@ -224,13 +226,13 @@ class RolesAndVisibilityIntegrationTest {
         // make public, capture token
         FileRecord publicFile = patchTemplate.exchange(
                 url("/api/file/" + file.id() + "/visibility"), HttpMethod.PATCH,
-                withAuth(token, new VisibilityRequest(FileVisibility.PUBLIC)), FileRecord.class).getBody();
+                withAuth(token, new VisibilityRequest(null, FileVisibility.PUBLIC)), FileRecord.class).getBody();
         UUID shareToken = publicFile.shareToken();
 
         // revert to private
         patchTemplate.exchange(
                 url("/api/file/" + file.id() + "/visibility"), HttpMethod.PATCH,
-                withAuth(token, new VisibilityRequest(FileVisibility.PRIVATE)), FileRecord.class);
+                withAuth(token, new VisibilityRequest(null, FileVisibility.PRIVATE)), FileRecord.class);
 
         // old share token should now 404
         ResponseEntity<String> response = restTemplate.getForEntity(
@@ -245,5 +247,18 @@ class RolesAndVisibilityIntegrationTest {
                 url("/api/public/file/" + UUID.randomUUID()), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    // --- DELETE /api/file/{id} as owner ---
+
+    @Test
+    void deleteFile_asOwner_returns204() {
+        String token = registerAndGetToken();
+        FileRecord file = createFile(token, "delete-as-owner-" + UUID.randomUUID() + ".txt");
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                url("/api/file/" + file.id()), HttpMethod.DELETE, withAuth(token), Void.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 }

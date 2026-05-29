@@ -2,7 +2,6 @@ import s from './ControlsBar.module.css'
 
 interface Props {
   isLoggedIn: boolean
-  isAdmin: boolean
   hasSelection: boolean
   activeKey: string | null
   onOpen: () => void
@@ -11,7 +10,7 @@ interface Props {
   onShare: () => void
 }
 
-export default function ControlsBar({ isLoggedIn, isAdmin, hasSelection, activeKey, onOpen, onUpload, onDelete, onShare }: Props) {
+export default function ControlsBar({ isLoggedIn, hasSelection, activeKey, onOpen, onUpload, onDelete, onShare }: Props) {
   const controls = [
     { id: 'a', label: 'Open',    onClick: onOpen,     active: isLoggedIn && hasSelection },
     { id: 'b', label: 'Back',    onClick: undefined,  active: true },

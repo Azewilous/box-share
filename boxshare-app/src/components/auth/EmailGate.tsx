@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import GcButton from '../button/GcButton'
 import s from './EmailGate.module.css'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '../../context/useAuth'
 import { resendVerification } from '../../api/auth'
 import axios from 'axios'
 

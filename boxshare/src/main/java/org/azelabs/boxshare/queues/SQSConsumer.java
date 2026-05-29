@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.sqs.model.Message;
 
 import java.time.LocalDateTime;
@@ -44,25 +45,30 @@ public class SQSConsumer {
             Records recordList = objectMapper.readValue(body, Records.class);
             List<MessageResponse> responses = recordList.getRecords();
             for (MessageResponse record : responses) {
-
                 MessageS3Response messageS3Response = record.getResponse();
                 BucketObject bucketObject = messageS3Response.getObject();
+                try {
+                    HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(bucketObject.getKey())
+                            .build();
 
-                HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(bucketObject.getKey())
-                        .build();
+                    HeadObjectResponse headBucketResponse = s3Client.headObject(headObjectRequest);
 
-                HeadObjectResponse headBucketResponse = s3Client.headObject(headObjectRequest);
+                    FileRecord file = service.getByName(bucketObject.getKey())
+                            .orElseThrow(() -> new IllegalStateException("No file record for key: " + bucketObject.getKey()));
+                    FileRecord updatedFile = new FileRecord(file.id(), file.name(), bucketObject.getSize(), headBucketResponse.contentType(),
+                            file.owner(), UploadStatus.COMPLETED, file.visibility(), file.shareToken(), null, false);
 
-                FileRecord file = service.getByName(bucketObject.getKey()).orElseThrow();
-                FileRecord updatedFile = new FileRecord(file.id(), file.name(), bucketObject.getSize(), headBucketResponse.contentType(),
-                        file.uploadedBy(), UploadStatus.COMPLETED, file.visibility(), file.shareToken(), null);
-
-                service.update(updatedFile);
+                    service.update(updatedFile);
+                } catch (NoSuchKeyException ex) {
+                    log.warn("S3 object not found for key '{}', skipping", bucketObject.getKey());
+                } catch (Exception ex) {
+                    log.error("Failed to process S3 record for key '{}': {}", bucketObject.getKey(), ex.getMessage());
+                }
             }
         } catch (JsonProcessingException ex) {
-            log.error(ex.getMessage());
+            log.error("Failed to parse SQS message: {}", ex.getMessage());
         }
     }
 

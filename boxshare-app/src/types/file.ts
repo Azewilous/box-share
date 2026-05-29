@@ -6,4 +6,5 @@ export interface FileSlot {
   size: string
   visibility: 'PRIVATE' | 'PUBLIC'
   shareToken: string | null
+  shared: boolean
 }

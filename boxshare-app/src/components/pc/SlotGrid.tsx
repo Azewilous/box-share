@@ -4,7 +4,7 @@ import s from './SlotGrid.module.css'
 
 interface Props {
   slots: (FileSlot | null)[]
-  selected: number
+  selected: number | null
   onSelect: (index: number) => void
 }
 

@@ -1,0 +1,120 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tabs {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--panel-border-bright);
+}
+
+.tab {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+
+.tab:first-child {
+  border-right: 1px solid var(--panel-border-bright);
+}
+
+.tab.active {
+  background: var(--label-bg);
+  color: var(--label-text);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.linkRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+
+.linkText {
+  flex: 1;
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Courier New', monospace;
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: var(--panel-border-bright);
+  color: var(--label-text);
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 0.15s;
+}
+
+.copyBtn:hover { filter: brightness(1.2); }
+
+.input {
+  width: 100%;
+  padding: 9px 12px;
+  background: rgba(0,0,0,0.3);
+  border: 2px solid var(--panel-border);
+  border-radius: 6px;
+  color: var(--text-white);
+  font-size: 13px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--panel-border-bright);
+}
+
+.input::placeholder { color: var(--text-dim); }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.error {
+  margin: 0;
+  font-size: 11px;
+  color: #e07820;
+  text-align: center;
+}

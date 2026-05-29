@@ -12,7 +12,9 @@ public enum CommandType {
     CREATE_FILE("CreateFileCommand"),
     GET_FILE("GetFileCommand"),
     DELETE_FILE("DeleteFileCommand"),
-    LIST_MY_FILES("ListMyFilesCommand");
+    LIST_MY_FILES("ListFilesCommand"),
+    TOGGLE_FILE_VISIBILITY("ToggleFileVisibilityCommand"),
+    SHARE_FILE("ShareFileCommand");
 
     private final String name;
 

@@ -73,7 +73,7 @@ class FileUploadIntegrationTest {
 
         // Create file record — returns presigned PUT URL from LocalStack
         String filename = "test-" + runId + ".txt";
-        FileRecord createBody = new FileRecord(null, filename, null, null, "upload+" + runId + "@example.com", null, null, null, null);
+        FileRecord createBody = new FileRecord(null, filename, null, null, null, null, null, null, null, false);
         ResponseEntity<FileRecord> createResponse = restTemplate.exchange(
                 url("/api/file"), HttpMethod.POST, withAuth(token, createBody), FileRecord.class);
 

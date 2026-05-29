@@ -13,6 +13,7 @@ export interface FileRecord {
   visibility: FileVisibility
   shareToken: string | null
   presignedUrl: string | null
+  shared: boolean
 }
 
 export async function listMyFiles(): Promise<FileRecord[]> {
@@ -20,13 +21,8 @@ export async function listMyFiles(): Promise<FileRecord[]> {
   return data
 }
 
-export async function initiateUpload(payload: Omit<FileRecord, 'id' | 'shareToken' | 'presignedUrl'>): Promise<FileRecord> {
-  const { data } = await client.post<FileRecord>('/api/file', { ...payload, id: null, shareToken: null, presignedUrl: null })
-  return data
-}
-
-export async function getFile(filename: string): Promise<FileRecord> {
-  const { data } = await client.get<FileRecord>(`/api/file/${encodeURIComponent(filename)}`)
+export async function initiateUpload(payload: Omit<FileRecord, 'id' | 'shareToken' | 'presignedUrl' | 'shared'>): Promise<FileRecord> {
+  const { data } = await client.post<FileRecord>('/api/file', { ...payload, id: null, shareToken: null, presignedUrl: null, shared: false })
   return data
 }
 
@@ -42,6 +38,10 @@ export async function updateVisibility(id: number, visibility: FileVisibility): 
 
 export async function deleteFile(id: number): Promise<void> {
   await client.delete(`/api/file/${id}`)
+}
+
+export async function shareFileWithUser(fileId: number, email: string): Promise<void> {
+  await client.post(`/api/file/${fileId}/share`, null, { params: { email } })
 }
 
 export async function getPublicFile(shareToken: string): Promise<FileRecord> {

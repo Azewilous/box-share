@@ -15,6 +15,13 @@ export function setOnAuthFailure(cb: () => void) {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (import.meta.env.DEV) {
+      const { config, response } = error
+      console.group(`[API ERROR] ${config?.method?.toUpperCase()} ${config?.url}`)
+      console.log('Status :', response?.status ?? 'no response')
+      console.log('Body   :', response?.data ?? error.message)
+      console.groupEnd()
+    }
     if (error.response?.status === 401) {
       _onAuthFailure?.()
     }

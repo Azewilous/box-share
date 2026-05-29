@@ -1,5 +1,6 @@
 package org.azelabs.boxshare.controllers;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.azelabs.boxshare.application.CommandInvoker;
 import org.azelabs.boxshare.application.enums.CommandType;
 import org.azelabs.boxshare.dtos.UserRecord;
@@ -60,5 +61,10 @@ public class UserController {
     public ResponseEntity<Void> resendVerificationEmail(@AuthenticationPrincipal HybridUser principal) {
         userService.resendVerificationEmail(principal.getUser().getEmail());
         return ResponseEntity.ok().build();
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Void> handleNotFound() {
+        return ResponseEntity.notFound().build();
     }
 }

@@ -10,5 +10,5 @@ import java.util.UUID;
 public interface IFileRepository extends JpaRepository<FileModel, Long> {
     Optional<FileModel> findByName(String name);
     Optional<FileModel> findByShareToken(UUID shareToken);
-    List<FileModel> findAllByUploadedBy(String uploadedBy);
+    List<FileModel> findAllByOwner_Identity(UUID identity);
 }

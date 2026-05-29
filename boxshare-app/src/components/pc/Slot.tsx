@@ -8,10 +8,16 @@ interface Props {
 }
 
 export default function Slot({ slot, selected, onClick }: Props) {
-  const classes = [s.slot, !slot ? s.empty : '', selected ? s.selected : ''].join(' ')
+  const classes = [
+    s.slot,
+    !slot ? s.empty : '',
+    selected ? s.selected : '',
+    slot?.shared ? s.shared : '',
+  ].join(' ')
 
   return (
     <div className={classes} title={slot?.name} onClick={onClick}>
+      {slot?.shared && <span className={s.sharedBadge}>shared</span>}
       <span className={s.emoji}>{slot?.emoji}</span>
       {slot && (
         <>

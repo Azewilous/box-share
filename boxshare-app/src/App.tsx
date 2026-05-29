@@ -10,27 +10,34 @@ import ProfileModal from './components/auth/ProfileModal'
 import EmailGate from './components/auth/EmailGate'
 import VerifyEmailPage from './components/auth/VerifyEmailPage'
 import FileViewerModal from './components/pc/FileViewerModal'
-import { useAuth } from './context/AuthContext'
-import { listMyFiles, initiateUpload, updateVisibility, deleteFile, type FileRecord } from './api/files'
+import ShareModal from './components/pc/ShareModal'
+import PublicViewer from './components/pc/PublicViewer'
+import Modal from './components/modal/Modal'
+import GcButton from './components/button/GcButton'
+import { useAuth } from './context/useAuth'
+import { listMyFiles, initiateUpload, updateVisibility, deleteFile, shareFileWithUser, type FileRecord } from './api/files'
 import axios from 'axios'
 import { fileRecordToSlot } from './utils/fileUtils'
 import type { FileSlot } from './types/file'
 import s from './App.module.css'
 
-type Modal = 'login' | 'register' | 'profile' | 'viewer' | null
+type Modal = 'login' | 'register' | 'profile' | 'viewer' | 'confirm-delete' | 'share' | null
 type Tab   = 'party' | 'box'
 
 const BOX_SIZE   = 30
 const PARTY_SIZE = 6
 const COLS       = 6
 
-function padSlots(files: FileSlot[], size: number): (FileSlot | null)[] {
+function padSlots(files: (FileSlot | null)[], size: number): (FileSlot | null)[] {
   return Array.from({ length: size }, (_, i) => files[i] ?? null)
 }
 
-// read verify token once at module level — stable, no re-reads needed
 const VERIFY_TOKEN = window.location.pathname === '/verify-email'
   ? new URLSearchParams(window.location.search).get('token')
+  : null
+
+const PUBLIC_VIEW_TOKEN = window.location.pathname.startsWith('/view/')
+  ? window.location.pathname.slice('/view/'.length)
   : null
 
 export default function App() {
@@ -54,8 +61,7 @@ export default function App() {
 
   const selectedFile = selectedIndex !== null ? files[selectedIndex] ?? null : null
   const selectedSlot = selectedIndex !== null ? displaySlots[selectedIndex] ?? null : null
-  const isAdmin      = user?.role === 'ROLE_ADMIN'
-  const hasSelection = selectedIndex !== null && displaySlots[selectedIndex] !== null
+const hasSelection = selectedIndex !== null && displaySlots[selectedIndex] !== null
 
   function closeModal() { setModal(null) }
 
@@ -106,8 +112,14 @@ export default function App() {
   }, [user])
 
   // ── Delete ────────────────────────────────────────────────────────
-  const handleDelete = useCallback(async () => {
+  const handleDelete = useCallback(() => {
     if (!selectedFile?.id) return
+    setModal('confirm-delete')
+  }, [selectedFile])
+
+  const confirmDelete = useCallback(async () => {
+    if (!selectedFile?.id) return
+    setModal(null)
     try {
       await deleteFile(selectedFile.id)
       setFiles(prev => prev.filter(f => f.id !== selectedFile.id))
@@ -127,19 +139,25 @@ export default function App() {
   }, [selectedFile])
 
   // ── Share ─────────────────────────────────────────────────────────
-  const handleShare = useCallback(async () => {
+  const handleShare = useCallback(() => {
     if (!selectedFile?.id) return
-    try {
-      const updated = await updateVisibility(selectedFile.id, 'PUBLIC')
-      setFiles(prev => prev.map(f => f.id === updated.id ? updated : f))
-      if (updated.shareToken) {
-        const url = `${import.meta.env.VITE_API_BASE_URL}/api/public/file/${updated.shareToken}`
-        await navigator.clipboard.writeText(url)
-        alert(`Share link copied to clipboard!\n${url}`)
-      }
-    } catch (err) {
-      console.error('Share failed', err)
-    }
+    setModal('share')
+  }, [selectedFile])
+
+  const handleGenerateLink = useCallback(async (): Promise<FileRecord> => {
+    const updated = await updateVisibility(selectedFile!.id!, 'PUBLIC')
+    setFiles(prev => prev.map(f => f.id === updated.id ? updated : f))
+    return updated
+  }, [selectedFile])
+
+  const handleRevokeLink = useCallback(async (): Promise<FileRecord> => {
+    const updated = await updateVisibility(selectedFile!.id!, 'PRIVATE')
+    setFiles(prev => prev.map(f => f.id === updated.id ? updated : f))
+    return updated
+  }, [selectedFile])
+
+  const handleEmailShare = useCallback(async (email: string): Promise<void> => {
+    await shareFileWithUser(selectedFile!.id!, email)
   }, [selectedFile])
 
   // ── Keyboard shortcuts + grid navigation ─────────────────────────
@@ -195,6 +213,7 @@ export default function App() {
 
   // ── Early returns (after all hooks) ──────────────────────────────
   if (VERIFY_TOKEN) return <VerifyEmailPage token={VERIFY_TOKEN} />
+  if (PUBLIC_VIEW_TOKEN) return <PublicViewer token={PUBLIC_VIEW_TOKEN} />
   if (!isLoading && isLoggedIn && !isVerified) return <EmailGate />
 
   return (
@@ -223,7 +242,7 @@ export default function App() {
 
       <ControlsBar
         isLoggedIn={isLoggedIn}
-        isAdmin={isAdmin}
+
         hasSelection={hasSelection}
         activeKey={activeKey}
         onOpen={() => setModal('viewer')}
@@ -244,6 +263,31 @@ export default function App() {
       {modal === 'register' && <RegisterModal onClose={closeModal} onSwitchToLogin={() => setModal('login')}      onSuccess={closeModal} />}
       {modal === 'profile'  && <ProfileModal  onClose={closeModal} />}
       {modal === 'viewer'   && selectedFile && <FileViewerModal file={selectedFile} onClose={closeModal} />}
+      {modal === 'share'    && selectedFile && (
+        <ShareModal
+          file={selectedFile}
+          onClose={closeModal}
+          onGenerateLink={handleGenerateLink}
+          onRevokeLink={handleRevokeLink}
+          onEmailShare={handleEmailShare}
+          onFileUpdate={updated => setFiles(prev => prev.map(f => f.id === updated.id ? updated : f))}
+        />
+      )}
+      {modal === 'confirm-delete' && selectedSlot && (
+        <Modal title="Delete File" onClose={closeModal} maxWidth={340}>
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontSize: 36 }}>{selectedSlot.emoji}</div>
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-white)', lineHeight: 1.5 }}>
+              Delete <strong>{selectedSlot.name}</strong>?<br />
+              <span style={{ color: 'var(--text-dim)', fontSize: 11 }}>This cannot be undone.</span>
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <GcButton variant="b" label="Cancel" onClick={closeModal} />
+              <GcButton variant="y" label="Delete" onClick={confirmDelete} />
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

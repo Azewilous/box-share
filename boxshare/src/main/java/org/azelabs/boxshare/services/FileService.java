@@ -5,13 +5,19 @@ import lombok.RequiredArgsConstructor;
 import org.azelabs.boxshare.application.enums.FileVisibility;
 import org.azelabs.boxshare.application.enums.UploadStatus;
 import org.azelabs.boxshare.dtos.FileRecord;
+import org.azelabs.boxshare.dtos.ShareFileRequest;
 import org.azelabs.boxshare.models.FileModel;
+import org.azelabs.boxshare.models.SharedFileModel;
+import org.azelabs.boxshare.models.UserModel;
 import org.azelabs.boxshare.repositories.IFileRepository;
+import org.azelabs.boxshare.repositories.ISharedFileRepository;
+import org.azelabs.boxshare.repositories.IUserRepository;
 import org.azelabs.boxshare.services.interfaces.IFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -35,6 +41,8 @@ public class FileService implements IFileService {
     private static final Logger log = LoggerFactory.getLogger(FileService.class);
 
     private final IFileRepository repository;
+    private final ISharedFileRepository sharedFileRepository;
+    private final IUserRepository userRepository;
 
     @Value("${aws.s3.bucket}")
     private String bucketName;
@@ -48,9 +56,22 @@ public class FileService implements IFileService {
 
     @Override
     public List<FileRecord> allByOwner(String identity) {
-        return repository.findAllByUploadedBy(identity).stream()
-                .map(f -> toDTO(f, null))
+        return repository.findAllByOwner_Identity(UUID.fromString(identity)).stream()
+                .map(f -> toDTO(f, null, false))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FileRecord> allForUser(String identity) {
+        UUID uuid = UUID.fromString(identity);
+        List<FileRecord> owned = repository.findAllByOwner_Identity(uuid).stream()
+                .map(f -> toDTO(f, null, false))
+                .collect(Collectors.toList());
+        List<FileRecord> shared = sharedFileRepository.findByUser_Identity(uuid).stream()
+                .map(sf -> toDTO(sf.getFile(), null, true))
+                .collect(Collectors.toList());
+        owned.addAll(shared);
+        return owned;
     }
 
     @Override
@@ -77,9 +98,7 @@ public class FileService implements IFileService {
         model.setSize(file.size());
         model.setMimeType(file.mimeType());
         model.setUploadStatus(file.status());
-        model.setUploadedBy(file.uploadedBy());
         model.setUpdated_at(ZonedDateTime.now());
-        //toDTO(model, null);
         repository.save(model);
     }
 
@@ -114,6 +133,24 @@ public class FileService implements IFileService {
         file.setUploadStatus(status);
         FileModel saved = repository.save(file);
         return toDTO(saved, generatedUrl);
+    }
+
+    @Override
+    @Transactional
+    public void shareFile(ShareFileRequest request) {
+        FileModel file = repository.findById(request.fileId())
+                .orElseThrow(() -> new EntityNotFoundException("File not found: " + request.fileId()));
+        UserModel user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + request.email()));
+
+        if (sharedFileRepository.existsByFileAndUser(file, user)) {
+            return;
+        }
+
+        SharedFileModel share = new SharedFileModel();
+        share.setFile(file);
+        share.setUser(user);
+        sharedFileRepository.save(share);
     }
 
     private String generateGetPresignedUrl(String fileName) {
@@ -157,7 +194,7 @@ public class FileService implements IFileService {
     @Override
     public boolean isOwner(Long fileId, String identity) {
         return repository.findById(fileId)
-                .map(f -> identity.equals(f.getUploadedBy()))
+                .map(f -> UUID.fromString(identity).equals(f.getOwner().getIdentity()))
                 .orElse(false);
     }
 
@@ -179,8 +216,12 @@ public class FileService implements IFileService {
     }
 
     private FileRecord toDTO(FileModel file, String presignedUrl) {
+        return toDTO(file, presignedUrl, false);
+    }
+
+    private FileRecord toDTO(FileModel file, String presignedUrl, boolean shared) {
         return new FileRecord(file.getId(), file.getName(), file.getSize(), file.getMimeType(),
-                file.getUploadedBy(), file.getUploadStatus(), file.getVisibility(), file.getShareToken(), presignedUrl);
+                file.getOwner(), file.getUploadStatus(), file.getVisibility(), file.getShareToken(), presignedUrl, shared);
     }
 
     private FileModel toEntity(FileRecord file) {
@@ -188,7 +229,7 @@ public class FileService implements IFileService {
         model.setName(file.name());
         model.setSize(file.size());
         model.setMimeType(file.mimeType());
-        model.setUploadedBy(file.uploadedBy());
+        model.setOwner(file.owner());
         model.setUploadStatus(file.status());
         model.setVisibility(FileVisibility.PRIVATE);
         return model;

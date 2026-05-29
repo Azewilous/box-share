@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import {
   login as apiLogin,
   register as apiRegister,
@@ -17,7 +17,7 @@ export interface AuthUser {
   isVerified: boolean
 }
 
-interface AuthContextValue {
+export interface AuthContextValue {
   user: AuthUser | null
   isLoggedIn: boolean
   isVerified: boolean
@@ -27,7 +27,7 @@ interface AuthContextValue {
   logout: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null)
+export const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -90,8 +90,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
-  return ctx
-}

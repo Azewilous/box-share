@@ -1,73 +1,91 @@
-# React + TypeScript + Vite
+# BoxShare — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The UI for BoxShare, themed after the Pokémon Colosseum PC Box storage screen. A dark teal grid-based interface where each file occupies a slot, inspired by the GameCube-era box management screen.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **File grid** — 30-slot box view and 6-slot party view, keyboard navigable with arrow keys
+- **Upload** — press X (or click Upload) to pick a file; it's uploaded directly to S3 via a pre-signed URL
+- **View** — press A on a selected file to preview images, video, audio, PDFs, and text files inline
+- **Delete** — press Y with a file selected; a confirmation dialog prevents accidental deletes
+- **Share**
+  - *Link share* — generate a public `/view/:token` URL anyone can open without logging in; revoke it to make the file private again
+  - *Email share* — share directly with another BoxShare user by their email address; shared files appear with a purple tint and a "shared" badge in the recipient's grid
+- **Profile** — click your email in the top bar to update your name and email
+- **Auth** — register, log in, log out; email verification gate before accessing the app
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** + **TypeScript**
+- **Vite** — dev server and build
+- **Axios** — API client with a response interceptor for dev-mode error logging
+- CSS Modules — scoped styles per component, no CSS framework
 
-## Expanding the ESLint configuration
+## Running Locally
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The frontend expects the BoxShare backend running at `http://localhost:8080`. See the backend README for setup.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev       # http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Environment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create `.env.local` in the project root:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+## Keyboard Controls
+
+| Key | Action |
+|-----|--------|
+| Arrow keys | Navigate the file grid |
+| A | Open file viewer |
+| B | Deselect / close viewer |
+| X | Upload a file |
+| Y | Delete selected file |
+| Z | Share selected file |
+
+## Testing
+
+```bash
+# Unit tests (pure logic — fileUtils, error handling)
+npm test
+
+# Unit tests with coverage report
+npm run test:coverage
+
+# E2E tests — Playwright, mocks the API, no backend needed
+npm run test:e2e
+
+# E2E with interactive UI
+npm run test:e2e:ui
+```
+
+Unit tests cover `src/utils/fileUtils.ts` and `src/api/errors.ts`.
+E2E tests cover the full UI: auth, file list, upload, delete, share (link + email), profile, and the public viewer page.
+
+## Project Structure
+
+```
+src/
+  api/          # Axios API functions (auth, files, users)
+  components/
+    auth/       # Login, register, profile, email gate modals
+    button/     # GcButton — game-controller style button
+    layout/     # TopBar, ControlsBar
+    modal/      # Base Modal wrapper
+    pc/         # BoxArea, SlotGrid, Slot, FileDataPanel, ShareModal, PublicViewer
+  context/      # AuthContext + useAuth hook
+  data/         # Mock slots for logged-out demo view
+  types/        # FileSlot type
+  utils/        # fileUtils — emoji, type label, size formatting
+e2e/            # Playwright E2E tests
+```
+
+## Public File Viewer
+
+Shared files are accessible at `/view/:shareToken` without logging in. The page loads the file via the public API endpoint and renders the same viewer (image, video, audio, PDF, text). The link is revocable — once the owner makes the file private, the token returns a 404.

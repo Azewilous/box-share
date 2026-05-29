@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Modal from '../modal/Modal'
 import GcButton from '../button/GcButton'
 import s from './Auth.module.css'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '../../context/useAuth'
 import { resolveApiError } from '../../api/errors'
 
 interface Props {

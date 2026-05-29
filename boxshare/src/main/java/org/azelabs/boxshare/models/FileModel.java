@@ -18,7 +18,9 @@ public class FileModel extends BaseModel {
     private String name;
     private Long size;
     private String mimeType;
-    private String uploadedBy;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private UserModel owner;
     @Enumerated(EnumType.ORDINAL)
     private UploadStatus uploadStatus;
     @Enumerated(EnumType.STRING)
