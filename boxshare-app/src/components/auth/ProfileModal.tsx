@@ -68,6 +68,9 @@ export default function ProfileModal({ onClose }: Props) {
                 value={fields.firstName}
                 onChange={handleChange}
                 autoComplete="given-name"
+                autoCorrect="off"
+                autoCapitalize="words"
+                spellCheck={false}
               />
             </div>
             <div className={s.field}>
@@ -79,6 +82,9 @@ export default function ProfileModal({ onClose }: Props) {
                 value={fields.lastName}
                 onChange={handleChange}
                 autoComplete="family-name"
+                autoCorrect="off"
+                autoCapitalize="words"
+                spellCheck={false}
               />
             </div>
           </div>
@@ -87,11 +93,15 @@ export default function ProfileModal({ onClose }: Props) {
             <label className={s.label}>Email</label>
             <input
               className={s.input}
-              type="email"
+              type="text"
+              inputMode="email"
               name="email"
               value={fields.email}
               onChange={handleChange}
               autoComplete="email"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
             />
           </div>
 

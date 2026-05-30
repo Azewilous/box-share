@@ -99,6 +99,9 @@ export default function RegisterModal({ onClose, onSwitchToLogin, onSuccess }: P
               value={fields.firstName}
               onChange={handleChange}
               autoComplete="given-name"
+              autoCorrect="off"
+              autoCapitalize="words"
+              spellCheck={false}
             />
             {errors.firstName && <span className={s.errorMsg}>{errors.firstName}</span>}
           </div>
@@ -113,6 +116,9 @@ export default function RegisterModal({ onClose, onSwitchToLogin, onSuccess }: P
               value={fields.lastName}
               onChange={handleChange}
               autoComplete="family-name"
+              autoCorrect="off"
+              autoCapitalize="words"
+              spellCheck={false}
             />
             {errors.lastName && <span className={s.errorMsg}>{errors.lastName}</span>}
           </div>
@@ -127,7 +133,10 @@ export default function RegisterModal({ onClose, onSwitchToLogin, onSuccess }: P
             placeholder="AshKetchum"
             value={fields.username}
             onChange={handleChange}
-            autoComplete="username"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
           />
           {errors.username && <span className={s.errorMsg}>{errors.username}</span>}
         </div>
@@ -136,12 +145,16 @@ export default function RegisterModal({ onClose, onSwitchToLogin, onSuccess }: P
           <label className={s.label}>Email</label>
           <input
             className={`${s.input} ${errors.email ? s.error : ''}`}
-            type="email"
+            type="text"
+            inputMode="email"
             name="email"
             placeholder="trainer@example.com"
             value={fields.email}
             onChange={handleChange}
             autoComplete="email"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
           />
           {errors.email && <span className={s.errorMsg}>{errors.email}</span>}
         </div>
@@ -156,6 +169,9 @@ export default function RegisterModal({ onClose, onSwitchToLogin, onSuccess }: P
             value={fields.password}
             onChange={handleChange}
             autoComplete="new-password"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
           />
           {errors.password && <span className={s.errorMsg}>{errors.password}</span>}
         </div>
@@ -172,6 +188,9 @@ export default function RegisterModal({ onClose, onSwitchToLogin, onSuccess }: P
             value={fields.confirmPassword}
             onChange={handleChange}
             autoComplete="new-password"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
           />
           {errors.confirmPassword && <span className={s.errorMsg}>{errors.confirmPassword}</span>}
         </div>

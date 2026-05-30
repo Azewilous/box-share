@@ -3,6 +3,21 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: '0.0.0.0',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      // Proxy LocalStack S3 requests so presigned URLs work from any device on the network
+      '/localstack': {
+        target: 'http://localhost:4566',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/localstack/, ''),
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,

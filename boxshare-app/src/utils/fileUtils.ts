@@ -36,6 +36,15 @@ export function formatSize(bytes: number): string {
   return `${(bytes / 1024 ** 3).toFixed(1)} GB`
 }
 
+/** In dev, rewrite LocalStack presigned URLs to go through the Vite proxy so any device on the network can fetch them. */
+export function resolvePresignedUrl(url: string | null): string | null {
+  if (!url) return null
+  if (import.meta.env.DEV) {
+    return url.replace(/^https?:\/\/localhost:4566/, '/localstack')
+  }
+  return url
+}
+
 export function fileRecordToSlot(file: FileRecord): FileSlot {
   return {
     id:         file.id!,

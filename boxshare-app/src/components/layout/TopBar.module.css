@@ -71,13 +71,36 @@
   border-color: var(--panel-border-bright);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .topbar {
-    padding: 6px 12px;
+    flex-wrap: wrap;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .tabs {
+    order: 2;
+    flex: 1 1 100%;
   }
 
   .tab {
-    padding: 4px 10px;
-    font-size: 12px;
+    flex: 1;
+    text-align: center;
+    padding: 5px 8px;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+
+  .actions {
+    order: 1;
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .username {
+    font-size: 11px;
+    padding: 3px 8px;
+    max-width: 120px;
   }
 }

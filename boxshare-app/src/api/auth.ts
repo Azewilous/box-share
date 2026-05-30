@@ -19,12 +19,14 @@ export interface MeResponse {
   emailVerified: boolean
 }
 
-export async function register(payload: RegisterPayload): Promise<void> {
-  await client.post('/api/auth/register', payload)
+export async function register(payload: RegisterPayload): Promise<MeResponse> {
+  const { data } = await client.post<{ email: string; role: string; emailVerified: boolean }>('/api/auth/register', payload)
+  return { email: data.email, role: data.role, emailVerified: data.emailVerified }
 }
 
-export async function login(payload: LoginPayload): Promise<void> {
-  await client.post('/api/auth/login', payload)
+export async function login(payload: LoginPayload): Promise<MeResponse> {
+  const { data } = await client.post<{ email: string; role: string; emailVerified: boolean }>('/api/auth/login', payload)
+  return { email: data.email, role: data.role, emailVerified: data.emailVerified }
 }
 
 export async function logout(): Promise<void> {

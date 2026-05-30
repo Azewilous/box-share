@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Modal from '../modal/Modal'
 import { getFileForView, type FileRecord } from '../../api/files'
-import { formatSize } from '../../utils/fileUtils'
+import { formatSize, resolvePresignedUrl } from '../../utils/fileUtils'
 import s from './FileViewerModal.module.css'
 
 interface Props {
@@ -74,7 +74,7 @@ export default function FileViewerModal({ file, onClose }: Props) {
     getFileForView(file.name)
       .then(record => {
         if (record.presignedUrl) {
-          setViewUrl(record.presignedUrl)
+          setViewUrl(resolvePresignedUrl(record.presignedUrl))
           setState('ready')
         } else {
           setState('error')

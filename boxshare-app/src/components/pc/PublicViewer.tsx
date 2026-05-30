@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getPublicFile, type FileRecord } from '../../api/files'
-import { formatSize, emojiForMime } from '../../utils/fileUtils'
+import { formatSize, emojiForMime, resolvePresignedUrl } from '../../utils/fileUtils'
 import s from './PublicViewer.module.css'
 
 interface Props {
@@ -62,7 +62,7 @@ export default function PublicViewer({ token }: Props) {
       .then(record => {
         if (record.presignedUrl) {
           setFile(record)
-          setUrl(record.presignedUrl)
+          setUrl(resolvePresignedUrl(record.presignedUrl))
           setState('ready')
         } else {
           setState('error')

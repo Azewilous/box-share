@@ -57,15 +57,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearSession])
 
   const login = useCallback(async (payload: LoginPayload) => {
-    await apiLogin(payload)
-    const data = await apiMe()
+    const data = await apiLogin(payload)
     localStorage.setItem(SESSION_KEY, 'true')
     applyMe(data)
   }, [applyMe])
 
   const register = useCallback(async (payload: RegisterPayload) => {
-    await apiRegister(payload)
-    const data = await apiMe()
+    const data = await apiRegister(payload)
     localStorage.setItem(SESSION_KEY, 'true')
     applyMe(data)
   }, [applyMe])

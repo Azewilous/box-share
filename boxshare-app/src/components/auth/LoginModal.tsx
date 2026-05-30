@@ -59,12 +59,16 @@ export default function LoginModal({ onClose, onSwitchToRegister, onSuccess }: P
           <label className={s.label}>Email</label>
           <input
             className={`${s.input} ${errors.email ? s.error : ''}`}
-            type="email"
+            type="text"
+            inputMode="email"
             name="email"
             placeholder="trainer@example.com"
             value={fields.email}
             onChange={handleChange}
             autoComplete="email"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
           />
           {errors.email && <span className={s.errorMsg}>{errors.email}</span>}
         </div>
